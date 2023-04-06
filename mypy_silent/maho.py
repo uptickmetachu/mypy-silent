@@ -7,6 +7,8 @@ _type_ignore_re = re.compile(r"# type: ignore(\[(?P<error_code>[a-z, \-]+)\])?")
 def add_type_ignore_comment(
     line: str, error_code: Optional[str], nofmt: bool = False
 ) -> str:
+    fmt_skip_str = " # fmt: skip" if nofmt else ""
+    line = line.replace(fmt_skip_str, "")
     content_without_crlf = line.rstrip("\r\n")
     line_ending = line[len(content_without_crlf) :]
     error_codes: set[str] = set()
@@ -26,15 +28,17 @@ def add_type_ignore_comment(
 
     if error_codes:
         type_ignore_comment += f"[{', '.join(sorted(error_codes))}]"
-        if nofmt:
-            type_ignore_comment += " # fmt: skip"
 
     # Workarounds for https://mypy.readthedocs.io/en/stable/common_issues.html#silencing-linters
     if "# noqa" in content_without_crlf:
         return content_without_crlf.replace(
-            "# noqa", f"{type_ignore_comment} # noqa", 1
+            "# noqa", f"{type_ignore_comment} # noqa{fmt_skip_str}", 1
         )
-    return content_without_crlf.rstrip() + f"  {type_ignore_comment}" + line_ending
+    return (
+        content_without_crlf.rstrip()
+        + f"  {type_ignore_comment}{fmt_skip_str}"
+        + line_ending
+    )
 
 
 def remove_type_ignore_comment(line: str) -> str:

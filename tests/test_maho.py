@@ -79,3 +79,26 @@ def test_add_type_ignore_with_existing_comment_with_code() -> None:
         add_type_ignore_comment(input, error_code=None)
         == "host, port, protocol = m.groups()  # type: ignore[misc]\r\n"
     )
+
+
+def test_add_type_ignore_with_fmt_skip() -> None:
+    input = "host, port, protocol = m.groups()"
+
+    assert (
+        add_type_ignore_comment(input, error_code=None, nofmt=True)
+        == "host, port, protocol = m.groups()  # type: ignore # fmt: skip"
+    )
+
+    assert (
+        add_type_ignore_comment(input, error_code=None, nofmt=True)
+        == "host, port, protocol = m.groups()  # type: ignore # fmt: skip"
+    )
+
+
+def test_add_type_ignore_with_fmt_skip_to_line_already_with_fmt_skip() -> None:
+    input = "host, port, protocol = m.groups() # fmt: skip"
+
+    assert (
+        add_type_ignore_comment(input, error_code=None, nofmt=True)
+        == "host, port, protocol = m.groups()  # type: ignore # fmt: skip"
+    )
